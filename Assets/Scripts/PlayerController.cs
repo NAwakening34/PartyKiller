@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [SerializeField] PhotonView m_pv;
     [SerializeField] Transform m_camera;
     [SerializeField] Transform m_playerRenderer;
+    [SerializeField] Transform m_ghost;
     [SerializeField] Transform m_orientation;
     [SerializeField] BoxCollider m_boxcollider;
     [SerializeField] ParticleSystem m_particleSystem;
@@ -36,7 +37,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
     float m_hor, m_vert;
     Vector3 m_direction;
-    int m_life = 1;
+    bool m_death, m_isDeath;
 
     #endregion
 
@@ -44,7 +45,6 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
     private void Start()
     {
-        m_life = 1;
         m_boxcollider.enabled = false;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -53,7 +53,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
     private void Update()
     {
-        if (m_pv.IsMine)
+        if (m_pv.IsMine && !m_isDeath)
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
@@ -73,7 +73,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
     private void OnTriggerStay(Collider other)
     {
-        if (m_pv.IsMine)
+        if (m_pv.IsMine && !m_isDeath)
         {
             if (other.CompareTag("NPC"))
             {
@@ -86,24 +86,39 @@ public class PlayerController : MonoBehaviourPunCallbacks
         }
     }
 
+    public void OnEnable()
+    {
+        if (m_pv.IsMine)
+        {
+            PhotonNetwork.NetworkingClient.EventReceived += OnEvent; 
+        }
+    }
+
+    public void OnDisable()
+    {
+        if (m_pv.IsMine)
+        {
+            PhotonNetwork.NetworkingClient.EventReceived -= OnEvent;
+        }
+    }
+
     #endregion
 
     #region LocalMethods
 
     void Movement()
     {
-        if (m_pv.IsMine)
+        if (m_pv.IsMine && !m_death)
         {
             m_orientation.forward = (transform.position - new Vector3(m_camera.position.x, transform.position.y, m_camera.position.z)).normalized;
-            m_anim.SetFloat("MoveSpeed", m_direction.magnitude);
             m_hor = Input.GetAxisRaw("Horizontal");
             m_vert = Input.GetAxisRaw("Vertical");
             m_direction = (m_hor * m_orientation.right + m_vert * m_orientation.forward).normalized;
+            m_anim.SetFloat("MoveSpeed", m_direction.magnitude);
             if (m_direction.magnitude > 0)
             {
                 m_playerRenderer.forward = Vector3.Slerp(m_playerRenderer.forward, m_direction.normalized, Time.fixedDeltaTime * m_rotSpeed);
             }
-            m_rb.velocity = m_direction * m_speed;
         }
     }
 
@@ -129,6 +144,15 @@ public class PlayerController : MonoBehaviourPunCallbacks
         }
     }
 
+    void OnEvent(EventData photonEvent)
+    {
+        byte eventCode = photonEvent.Code;
+        if (eventCode == 1)
+        {
+            string data = (string)photonEvent.CustomData;
+        }
+    }
+
     #endregion
 
     #region PublicMethods
@@ -148,11 +172,9 @@ public class PlayerController : MonoBehaviourPunCallbacks
     void TakingDamage(int p_damage)
     {
         Debug.Log("se murio");
-        m_life -= p_damage;
-        if (m_life <= 0)
-        {
-            StartCoroutine(WaitForParticleSystem());
-        }
+        m_death = true;
+        m_isDeath = true;
+        StartCoroutine(WaitForParticleSystem());
     }
 
     #endregion
@@ -163,7 +185,11 @@ public class PlayerController : MonoBehaviourPunCallbacks
     {
         m_particleSystem.Play();
         yield return new WaitForSeconds(m_particleSystem.main.duration);
-        Destroy(gameObject);
+        m_playerRenderer.gameObject.SetActive(false);
+        m_playerRenderer = m_ghost;
+        m_playerRenderer.gameObject.SetActive(true);
+        m_anim = m_ghost.GetComponent<Animator>();
+        m_death = false;
     }
 
     #endregion
