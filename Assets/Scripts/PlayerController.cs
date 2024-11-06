@@ -6,8 +6,9 @@ using TMPro;
 using UnityEngine;
 using ExitGames.Client.Photon;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+using System.Linq;
 
-public class PlayerController : MonoBehaviourPunCallbacks
+public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
 {
     #region  Knobs
 
@@ -53,15 +54,22 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
     private void Update()
     {
-        if (m_pv.IsMine && !m_isDeath)
+        if (m_pv.IsMine)
         {
-            if (Input.GetKeyDown(KeyCode.E))
+            if(!m_isDeath)
             {
-                m_boxcollider.enabled = true;
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    m_boxcollider.enabled = true;
+                }
+                else if (Input.GetKeyUp(KeyCode.E))
+                {
+                    m_boxcollider.enabled = false;
+                }
             }
-            else if (Input.GetKeyUp(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.Escape))
             {
-                m_boxcollider.enabled = false;
+                GameManager.instance.disconnectFromCurrentRoom();
             }
         }
     }
@@ -90,7 +98,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     {
         if (m_pv.IsMine)
         {
-            PhotonNetwork.NetworkingClient.EventReceived += OnEvent; 
+            PhotonNetwork.AddCallbackTarget(this); 
         }
     }
 
@@ -98,7 +106,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     {
         if (m_pv.IsMine)
         {
-            PhotonNetwork.NetworkingClient.EventReceived -= OnEvent;
+            PhotonNetwork.RemoveCallbackTarget(this);
         }
     }
 
@@ -119,6 +127,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
             {
                 m_playerRenderer.forward = Vector3.Slerp(m_playerRenderer.forward, m_direction.normalized, Time.fixedDeltaTime * m_rotSpeed);
             }
+            m_rb.velocity = m_direction.normalized * m_speed;
         }
     }
 
@@ -144,24 +153,42 @@ public class PlayerController : MonoBehaviourPunCallbacks
         }
     }
 
-    void OnEvent(EventData photonEvent)
-    {
-        byte eventCode = photonEvent.Code;
-        if (eventCode == 1)
-        {
-            string data = (string)photonEvent.CustomData;
-        }
-    }
-
     #endregion
 
     #region PublicMethods
 
     public void DestroySelf()
     {
-        
+        if (m_pv.IsMine && !m_isDeath)
+        {
             m_pv.RPC("TakingDamage", RpcTarget.AllBuffered, 1);
-        
+        }
+    }
+
+    public void OnEvent(EventData photonEvent)
+    {
+        byte eventCode = photonEvent.Code;
+        switch (eventCode)
+        {
+            case 1:
+                GetNewGameplayRole();
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+            case 4:
+                break;
+            case 5:
+                break;
+            default:
+                break;
+        }
+        //if (eventCode == 1)
+        //{
+        //    string data = (string)photonEvent.CustomData;
+        //    GetNewGameplayRole();
+        //}
     }
 
     #endregion

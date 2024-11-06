@@ -1323,7 +1323,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!136 &9144300181390552412
 CapsuleCollider:
@@ -3046,7 +3046,7 @@ Canvas:
   serializedVersion: 3
   m_RenderMode: 1
   m_Camera: {fileID: 3198022687426913321}
-  m_PlaneDistance: 100
+  m_PlaneDistance: 4
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
@@ -3123,7 +3123,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5144959023103431933}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.038300842, y: 0.17025273, z: -0.0066225887, w: 0.98463356}
+  m_LocalRotation: {x: 0.03830084, y: 0.17025273, z: -0.006622588, w: 0.98463356}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -4069,7 +4069,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6218729939700598722}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.038300842, y: 0.17025274, z: -0.0066225887, w: 0.98463356}
+  m_LocalRotation: {x: 0.03830084, y: 0.17025274, z: -0.006622588, w: 0.98463356}
   m_LocalPosition: {x: -1.3431215, y: 1.5, z: -3.7677612}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

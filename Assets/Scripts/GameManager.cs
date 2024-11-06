@@ -24,7 +24,7 @@ public enum LevelManagerStates
 
 #endregion
 
-public class GameManager : MonoBehaviour
+public class GameManager : MonoBehaviourPunCallbacks
 {
     #region References
 
@@ -69,15 +69,15 @@ public class GameManager : MonoBehaviour
         
     }
 
-    private void OnEnable()
-    {
-        PhotonNetwork.AddCallbackTarget(this);
-    }
+    //private void OnEnable()
+    //{
+    //    PhotonNetwork.AddCallbackTarget(this);
+    //}
 
-    private void OnDisable()
-    {
-        PhotonNetwork.RemoveCallbackTarget(this);
-    }
+    //private void OnDisable()
+    //{
+    //    PhotonNetwork.RemoveCallbackTarget(this);
+    //}
 
     #endregion
 
@@ -97,6 +97,7 @@ public class GameManager : MonoBehaviour
 
     public void SetManagerStates(LevelManagerStates p_newState)
     {
+        
         if (p_newState == m_currentManagerState)
         {
             return;
@@ -110,6 +111,7 @@ public class GameManager : MonoBehaviour
             case LevelManagerStates.Waiting:
                 break;
             case LevelManagerStates.Playing:
+                Debug.Log("cambio el estado a Playing");
                 Playing();
                 break;
         }
@@ -117,6 +119,7 @@ public class GameManager : MonoBehaviour
 
     public static void AssignRole()
     {
+        Debug.Log("roles asignados");
         Player[] m_playersArray = PhotonNetwork.PlayerList;
         GameplayRoles[] m_gameplayRoles = { GameplayRoles.Inocent, GameplayRoles.Traitor };
 
@@ -129,6 +132,44 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public override void OnPlayerEnteredRoom(Player newplayer)
+    {
+        if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
+        {
+            TimerToStart();
+        }
+    }
+
+    public void disconnectFromCurrentRoom()
+    {
+        PhotonNetwork.LeaveRoom();
+    }
+
+    public override void OnLeftRoom()
+    {
+        PhotonNetwork.LoadLevel("MainMenu");
+    }
+
+    //public void OnEvent(EventData photonEvent)
+    //{
+    //    byte eventCode = photonEvent.Code;
+    //    if (eventCode == 1)
+    //    {
+    //        string data = (string)photonEvent.CustomData;
+    //        //GetNewGameplayRole();
+    //    }
+    //}
+
+    #endregion
+
+    #region IEnumerator
+
+    IEnumerator TimerToStart()
+    {
+        yield return new WaitForSeconds(3);
+        SetManagerStates(LevelManagerStates.Playing);
+    }
+
     #endregion
 
     #region FSMMethods
@@ -138,9 +179,8 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void Playing()
     {
-        SetNewRoleEvent();
         AssignRole();
-    }
+        SetNewRoleEvent();    }
 
     #endregion
 
