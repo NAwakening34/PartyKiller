@@ -69,7 +69,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
             }
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                GameManager.instance.disconnectFromCurrentRoom();
+                LevelManager.instance.disconnectFromCurrentRoom();
             }
         }
     }
@@ -139,9 +139,9 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
 
             switch (m_newPlayerRole)
             {
-                case "Inocent":
+                case "Innocent":
                     m_icon.material = m_material[0];
-                    m_textMeshProUGUI.text = "Inocent";
+                    m_textMeshProUGUI.text = "Innocent";
                     m_textMeshProUGUI.color = Color.cyan;
                     break;
                 case "Traitor":
