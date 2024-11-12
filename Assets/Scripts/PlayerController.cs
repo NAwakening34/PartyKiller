@@ -161,7 +161,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         if (m_pv.IsMine && !m_isDeath)
         {
-            m_pv.RPC("TakingDamage", RpcTarget.AllBuffered, 1);
+            m_pv.RPC("TakingDamage", RpcTarget.AllBuffered);
         }
     }
 
@@ -196,7 +196,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
     #region RPCMethods
 
     [PunRPC]
-    void TakingDamage(int p_damage)
+    void TakingDamage()
     {
         Debug.Log("se murio");
         m_death = true;

@@ -55,7 +55,7 @@ public class PhotonConnection : MonoBehaviourPunCallbacks
     RoomOptions NewRoomInfo()
     {
         RoomOptions roomOptions = new RoomOptions();
-        roomOptions.MaxPlayers = 20;
+        roomOptions.MaxPlayers = 9;
         roomOptions.IsOpen = true;
         roomOptions.IsVisible = true;
 

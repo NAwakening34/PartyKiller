@@ -7,6 +7,7 @@ using ExitGames.Client.Photon;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 using System.Linq;
 
+//este script se lo copie a Carpi
 public class LevelManager : MonoBehaviourPunCallbacks
 {
     public static LevelManager instance;
@@ -70,6 +71,7 @@ public class LevelManager : MonoBehaviourPunCallbacks
 
     }
 
+    //estás dos funciones las hice yo
     public void disconnectFromCurrentRoom()
     {
         PhotonNetwork.LeaveRoom();
@@ -89,17 +91,46 @@ public class LevelManager : MonoBehaviourPunCallbacks
         setNewRoleEvent();
     }
 
-    //Falta asignar cuantos roles hay segun la cantidad de jugadores
+    //Está función la hice yo
     void assignRole(){
         print("Se crea Hastable con la asignacion del nuevo rol");
         Player[] m_playersArray = PhotonNetwork.PlayerList;
-        List <string> m_gameplayRole = new List<string> { "Innocent", "Traitor", "Innocent", "Innocent" };
+        List <GameplayRole> m_gameplayRole = new List<GameplayRole>();
 
+        if (m_playersArray.Length <=5 && m_playersArray.Length >= 4)
+        {
+            m_gameplayRole.Add(GameplayRole.Traitor);
+            for (int i = m_gameplayRole.Count; i < m_playersArray.Length; i++)
+            {
+                m_gameplayRole.Add(GameplayRole.Innocent);
+            }
+        }
+        else if (m_playersArray.Length <= 7 && m_playersArray.Length >= 6)
+        {
+            m_gameplayRole.Add(GameplayRole.Traitor);
+            m_gameplayRole.Add(GameplayRole.Traitor);
+            for (int i = m_gameplayRole.Count; i < m_playersArray.Length; i++)
+            {
+                m_gameplayRole.Add(GameplayRole.Innocent);
+            }
+        }
+        else if (m_playersArray.Length <= 9 && m_playersArray.Length >= 8)
+        {
+            m_gameplayRole.Add(GameplayRole.Traitor);
+            m_gameplayRole.Add(GameplayRole.Traitor);
+            m_gameplayRole.Add(GameplayRole.Traitor);
+            for (int i = m_gameplayRole.Count; i < m_playersArray.Length; i++)
+            {
+                m_gameplayRole.Add(GameplayRole.Innocent);
+            }
+        }
+
+        int index = 0;
         for (int i = 0; i < m_playersArray.Length; i++)
         {
             Hashtable m_playerProperties = new Hashtable();
-            int index = Random.Range(0, m_gameplayRole.Count);
-            m_playerProperties["Role"] = m_gameplayRole[index];
+            index = Random.Range(0, m_gameplayRole.Count);
+            m_playerProperties["Role"] = m_gameplayRole[index].ToString();
             m_gameplayRole.RemoveAt(index);
             m_playersArray[i].SetCustomProperties(m_playerProperties);
         }
