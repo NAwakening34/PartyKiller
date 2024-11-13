@@ -191,6 +191,7 @@ public class LevelManager : MonoBehaviourPunCallbacks, IOnEventCallback
                 }
                 break;
             case "Traitor":
+                m_traitorCount--;
                 if (m_traitorCount == 0)
                 {
                     m_textMeshProUGUI.text = "Traitors wins";
