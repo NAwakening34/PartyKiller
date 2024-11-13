@@ -111,9 +111,10 @@ public class LevelManager : MonoBehaviourPunCallbacks, IOnEventCallback
             case 1:
                 break;
             case 2:
-                PlayerDied(photonEvent.Parameters.ToString());
+                InnocentDied();
                 break;
             case 3:
+                TraitorDied();
                 break;
             case 4:
                 break;
@@ -177,28 +178,25 @@ public class LevelManager : MonoBehaviourPunCallbacks, IOnEventCallback
         }
     }
 
-    void PlayerDied(string role)
+    void InnocentDied()
     {
-        switch (role)
+        m_innocentCount--;
+        if (m_innocentCount == 0)
         {
-            case "Innocent":
-                m_innocentCount--;
-                if (m_innocentCount == 0)
-                {
-                    m_textMeshProUGUI.text = "Innocents wins";
-                    m_textMeshProUGUI.color = Color.cyan;
-                    setLevelManagerSate(LevelManagerState.Ending);
-                }
-                break;
-            case "Traitor":
-                m_traitorCount--;
-                if (m_traitorCount == 0)
-                {
-                    m_textMeshProUGUI.text = "Traitors wins";
-                    m_textMeshProUGUI.color = Color.red;
-                    setLevelManagerSate(LevelManagerState.Ending);
-                }
-                break;
+            m_textMeshProUGUI.text = "Innocents wins";
+            m_textMeshProUGUI.color = Color.cyan;
+            setLevelManagerSate(LevelManagerState.Ending);
+        }
+    }
+
+    void TraitorDied()
+    {
+        m_traitorCount--;
+        if (m_traitorCount == 0)
+        {
+            m_textMeshProUGUI.text = "Traitors wins";
+            m_textMeshProUGUI.color = Color.cyan;
+            setLevelManagerSate(LevelManagerState.Ending);
         }
     }
 

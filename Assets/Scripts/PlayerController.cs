@@ -228,7 +228,14 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
 
     void DiedEvent(string role)
     {
-        byte m_ID = 2;//Codigo del Evento (1...199)
+        if (role == "Innocent")
+        {
+            byte m_ID = 2;
+        }
+        else
+        {
+            byte m_ID = 3;
+        }
         object content = role;
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
 
