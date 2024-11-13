@@ -11,6 +11,6 @@ public class Spawner : MonoBehaviour
     [SerializeField] PhotonView m_pv;
     void Start()
     {
-        PhotonNetwork.Instantiate("Player", new Vector3 (Random.Range(-25, 25), transform.position.y, Random.Range(-25, 25)), Quaternion.identity);
+        PhotonNetwork.Instantiate("Player", new Vector3 (Random.Range(-23, 23), transform.position.y, Random.Range(-23, 23)), Quaternion.identity);
     }
 }

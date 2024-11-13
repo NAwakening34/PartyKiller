@@ -14,10 +14,13 @@ public class LevelManager : MonoBehaviourPunCallbacks, IOnEventCallback
     public static LevelManager instance;
     public LevelManagerState m_currentState;
 
-    PhotonView m_photonView;
+    [Range(0.1f, 1f)]
+    [SerializeField] float traitorporcent;
+
+    [SerializeField]PhotonView m_photonView;
     [SerializeField] TextMeshProUGUI m_textMeshProUGUI;
 
-    int m_innocentCount, m_traitorCount;
+    [SerializeField] int m_innocentCount, m_traitorCount;
 
     private void Awake()
     {
@@ -33,8 +36,6 @@ public class LevelManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     void Start()
     {
-        m_photonView = GetComponent<PhotonView>();
-
         setLevelManagerSate(LevelManagerState.Waiting);
     }
 
@@ -136,36 +137,16 @@ public class LevelManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     //Está función la hice yo
     void assignRole(){
-        print("Se crea Hastable con la asignacion del nuevo rol");
         Player[] m_playersArray = PhotonNetwork.PlayerList;
         List <GameplayRole> m_gameplayRole = new List<GameplayRole>();
+        int totalPlayers = m_playersArray.Length;
 
-        if (m_playersArray.Length <=5 && m_playersArray.Length >= 4)
-        {
-            m_gameplayRole.Add(GameplayRole.Traitor);
-            m_traitorCount = 1;
-            m_innocentCount = m_playersArray.Length - m_traitorCount;
-        }
-        else if (m_playersArray.Length <= 7 && m_playersArray.Length >= 6)
-        {
-            m_gameplayRole.Add(GameplayRole.Traitor);
-            m_gameplayRole.Add(GameplayRole.Traitor);
-            m_traitorCount = 2;
-            m_innocentCount = m_playersArray.Length - m_traitorCount;
-        }
-        else if (m_playersArray.Length <= 9 && m_playersArray.Length >= 8)
-        {
-            m_gameplayRole.Add(GameplayRole.Traitor);
-            m_gameplayRole.Add(GameplayRole.Traitor);
-            m_gameplayRole.Add(GameplayRole.Traitor);
-            m_traitorCount = 3;
-            m_innocentCount = m_playersArray.Length - m_traitorCount;
-        }
+        m_traitorCount = Mathf.Max(1, Mathf.RoundToInt(totalPlayers * traitorporcent));
+        m_innocentCount = totalPlayers - m_traitorCount;
+        Debug.Log(m_traitorCount + " " + m_innocentCount);
 
-        for (int i = m_gameplayRole.Count; i < m_playersArray.Length; i++)
-        {
-            m_gameplayRole.Add(GameplayRole.Innocent);
-        }
+        m_gameplayRole.AddRange(Enumerable.Repeat(GameplayRole.Traitor, m_traitorCount));
+        m_gameplayRole.AddRange(Enumerable.Repeat(GameplayRole.Innocent, m_innocentCount));
 
         int index = 0;
         for (int i = 0; i < m_playersArray.Length; i++)
@@ -178,24 +159,36 @@ public class LevelManager : MonoBehaviourPunCallbacks, IOnEventCallback
         }
     }
 
+    //Fisher-Yates Shuffle
+    //void shuffleRoleList(List<GameplayRole> p_roleList)
+    //{
+    //    for (int i = p_roleList.Count - 1; i > 0; i--)
+    //    {
+    //        int j = Random.Range(0, i + 1);
+    //        GameplayRole temp_role = p_roleList[i];
+    //        p_roleList[i] = p_roleList[j];
+    //        p_roleList[j] = temp_role;
+    //    }
+    //}
+
     void InnocentDied()
     {
+        Debug.Log("entro a event");
         m_innocentCount--;
         if (m_innocentCount == 0)
         {
-            m_textMeshProUGUI.text = "Innocents wins";
-            m_textMeshProUGUI.color = Color.cyan;
+            m_photonView.RPC("winnerInfo", RpcTarget.All, false);
             setLevelManagerSate(LevelManagerState.Ending);
         }
     }
 
     void TraitorDied()
     {
+        Debug.Log("entro a event");
         m_traitorCount--;
         if (m_traitorCount == 0)
         {
-            m_textMeshProUGUI.text = "Traitors wins";
-            m_textMeshProUGUI.color = Color.cyan;
+            m_photonView.RPC("winnerInfo", RpcTarget.All, true);
             setLevelManagerSate(LevelManagerState.Ending);
         }
     }
@@ -205,6 +198,21 @@ public class LevelManager : MonoBehaviourPunCallbacks, IOnEventCallback
         if (PhotonNetwork.CurrentRoom.PlayerCount >= 4)
         {
             StartCoroutine(timerToStart());
+        }
+    }
+
+    [PunRPC]
+    void winnerInfo(bool inocentwin)
+    {
+        if (inocentwin)
+        {
+            m_textMeshProUGUI.text = "Innocent Win";
+            m_textMeshProUGUI.color = UnityEngine.Color.cyan;
+        }
+        else
+        {
+            m_textMeshProUGUI.text = "Traitor Win";
+            m_textMeshProUGUI.color = UnityEngine.Color.red;
         }
     }
 

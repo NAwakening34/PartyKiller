@@ -31,6 +31,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
     [SerializeField] MeshRenderer m_icon;
     [SerializeField] Material[] m_material;
     [SerializeField] TextMeshProUGUI m_textMeshProUGUI;
+    [SerializeField] CapsuleCollider m_capsuleCollider;
 
     #endregion
 
@@ -161,7 +162,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
 
     public void DestroySelf()
     {
-        if (m_pv.IsMine && !m_isDeath)
+        if (!m_pv.IsMine && !m_isDeath)
         {
             m_pv.RPC("TakingDamage", RpcTarget.AllBuffered);
         }
@@ -219,6 +220,8 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
         m_playerRenderer = m_ghost;
         m_playerRenderer.gameObject.SetActive(true);
         m_anim = m_ghost.GetComponent<Animator>();
+        m_rb.useGravity = false;
+        m_capsuleCollider.isTrigger = true;
         m_death = false;
     }
 
@@ -230,13 +233,14 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         if (m_pv.IsMine)
         {
+            byte m_ID;
             if (role == "Innocent")
             {
-                byte m_ID = 2;
+                m_ID = 2;
             }
             else
             {
-                byte m_ID = 3;
+                m_ID = 3;
             }
             object content = role;
             RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
