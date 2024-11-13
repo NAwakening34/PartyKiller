@@ -228,18 +228,21 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
 
     void DiedEvent(string role)
     {
-        if (role == "Innocent")
+        if (m_pv.IsMine)
         {
-            byte m_ID = 2;
-        }
-        else
-        {
-            byte m_ID = 3;
-        }
-        object content = role;
-        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
+            if (role == "Innocent")
+            {
+                byte m_ID = 2;
+            }
+            else
+            {
+                byte m_ID = 3;
+            }
+            object content = role;
+            RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
 
-        PhotonNetwork.RaiseEvent(m_ID, content, raiseEventOptions, SendOptions.SendReliable);
+            PhotonNetwork.RaiseEvent(m_ID, content, raiseEventOptions, SendOptions.SendReliable);
+        }
     }
 
     #endregion
