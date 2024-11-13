@@ -38,7 +38,8 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
 
     float m_hor, m_vert;
     Vector3 m_direction;
-    bool m_death, m_isDeath;
+    bool m_death, m_isDeath, m_canPlay;
+    string m_newPlayerRole;
 
     #endregion
 
@@ -56,7 +57,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         if (m_pv.IsMine)
         {
-            if(!m_isDeath)
+            if(!m_isDeath && m_canPlay && LevelManager.instance.m_currentState != LevelManagerState.Ending)
             {
                 if (Input.GetKeyDown(KeyCode.E))
                 {
@@ -81,7 +82,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
 
     private void OnTriggerStay(Collider other)
     {
-        if (m_pv.IsMine && !m_isDeath)
+        if (m_pv.IsMine && !m_isDeath && m_canPlay && LevelManager.instance.m_currentState != LevelManagerState.Ending)
         {
             if (other.CompareTag("NPC"))
             {
@@ -116,7 +117,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
 
     void Movement()
     {
-        if (m_pv.IsMine && !m_death)
+        if (m_pv.IsMine && !m_death && m_canPlay && LevelManager.instance.m_currentState != LevelManagerState.Ending)
         {
             m_orientation.forward = (transform.position - new Vector3(m_camera.position.x, transform.position.y, m_camera.position.z)).normalized;
             m_hor = Input.GetAxisRaw("Horizontal");
@@ -135,7 +136,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         if(PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue("Role", out object role))
         {
-            string m_newPlayerRole = role.ToString();
+            m_newPlayerRole = role.ToString();
 
             switch (m_newPlayerRole)
             {
@@ -150,6 +151,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
                     m_textMeshProUGUI.color = Color.red;
                     break;
             }
+            m_canPlay = true;
         }
     }
 
@@ -212,11 +214,25 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         m_particleSystem.Play();
         yield return new WaitForSeconds(m_particleSystem.main.duration);
+        DiedEvent(m_newPlayerRole);
         m_playerRenderer.gameObject.SetActive(false);
         m_playerRenderer = m_ghost;
         m_playerRenderer.gameObject.SetActive(true);
         m_anim = m_ghost.GetComponent<Animator>();
         m_death = false;
+    }
+
+    #endregion
+
+    #region Events
+
+    void DiedEvent(string role)
+    {
+        byte m_ID = 2;//Codigo del Evento (1...199)
+        object content = role;
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
+
+        PhotonNetwork.RaiseEvent(m_ID, content, raiseEventOptions, SendOptions.SendReliable);
     }
 
     #endregion

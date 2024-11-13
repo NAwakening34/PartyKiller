@@ -6,14 +6,18 @@ using Photon.Realtime;
 using ExitGames.Client.Photon;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 using System.Linq;
+using TMPro;
 
 //este script se lo copie a Carpi
-public class LevelManager : MonoBehaviourPunCallbacks
+public class LevelManager : MonoBehaviourPunCallbacks, IOnEventCallback
 {
     public static LevelManager instance;
+    public LevelManagerState m_currentState;
 
     PhotonView m_photonView;
-    LevelManagerState m_currentState;
+    [SerializeField] TextMeshProUGUI m_textMeshProUGUI;
+
+    int m_innocentCount, m_traitorCount;
 
     private void Awake()
     {
@@ -33,6 +37,23 @@ public class LevelManager : MonoBehaviourPunCallbacks
 
         setLevelManagerSate(LevelManagerState.Waiting);
     }
+
+    public void OnEnable()
+    {
+        if (m_photonView.IsMine)
+        {
+            PhotonNetwork.AddCallbackTarget(this);
+        }
+    }
+
+    public void OnDisable()
+    {
+        if (m_photonView.IsMine)
+        {
+            PhotonNetwork.RemoveCallbackTarget(this);
+        }
+    }
+
     /// <summary>
     /// Levanta el Evento cuando los jugadores esten listos para la partida
     /// </summary>
@@ -82,6 +103,27 @@ public class LevelManager : MonoBehaviourPunCallbacks
         PhotonNetwork.LoadLevel("MainMenu");
     }
 
+    public void OnEvent(EventData photonEvent)
+    {
+        byte eventCode = photonEvent.Code;
+        switch (eventCode)
+        {
+            case 1:
+                break;
+            case 2:
+                PlayerDied(photonEvent.Parameters.ToString());
+                break;
+            case 3:
+                break;
+            case 4:
+                break;
+            case 5:
+                break;
+            default:
+                break;
+        }
+    }
+
     /// <summary>
     /// Inicializa el estado de Playing
     /// </summary>
@@ -100,29 +142,28 @@ public class LevelManager : MonoBehaviourPunCallbacks
         if (m_playersArray.Length <=5 && m_playersArray.Length >= 4)
         {
             m_gameplayRole.Add(GameplayRole.Traitor);
-            for (int i = m_gameplayRole.Count; i < m_playersArray.Length; i++)
-            {
-                m_gameplayRole.Add(GameplayRole.Innocent);
-            }
+            m_traitorCount = 1;
+            m_innocentCount = m_playersArray.Length - m_traitorCount;
         }
         else if (m_playersArray.Length <= 7 && m_playersArray.Length >= 6)
         {
             m_gameplayRole.Add(GameplayRole.Traitor);
             m_gameplayRole.Add(GameplayRole.Traitor);
-            for (int i = m_gameplayRole.Count; i < m_playersArray.Length; i++)
-            {
-                m_gameplayRole.Add(GameplayRole.Innocent);
-            }
+            m_traitorCount = 2;
+            m_innocentCount = m_playersArray.Length - m_traitorCount;
         }
         else if (m_playersArray.Length <= 9 && m_playersArray.Length >= 8)
         {
             m_gameplayRole.Add(GameplayRole.Traitor);
             m_gameplayRole.Add(GameplayRole.Traitor);
             m_gameplayRole.Add(GameplayRole.Traitor);
-            for (int i = m_gameplayRole.Count; i < m_playersArray.Length; i++)
-            {
-                m_gameplayRole.Add(GameplayRole.Innocent);
-            }
+            m_traitorCount = 3;
+            m_innocentCount = m_playersArray.Length - m_traitorCount;
+        }
+
+        for (int i = m_gameplayRole.Count; i < m_playersArray.Length; i++)
+        {
+            m_gameplayRole.Add(GameplayRole.Innocent);
         }
 
         int index = 0;
@@ -133,6 +174,30 @@ public class LevelManager : MonoBehaviourPunCallbacks
             m_playerProperties["Role"] = m_gameplayRole[index].ToString();
             m_gameplayRole.RemoveAt(index);
             m_playersArray[i].SetCustomProperties(m_playerProperties);
+        }
+    }
+
+    void PlayerDied(string role)
+    {
+        switch (role)
+        {
+            case "Innocent":
+                m_innocentCount--;
+                if (m_innocentCount == 0)
+                {
+                    m_textMeshProUGUI.text = "Innocents wins";
+                    m_textMeshProUGUI.color = Color.cyan;
+                    setLevelManagerSate(LevelManagerState.Ending);
+                }
+                break;
+            case "Traitor":
+                if (m_traitorCount == 0)
+                {
+                    m_textMeshProUGUI.text = "Traitors wins";
+                    m_textMeshProUGUI.color = Color.red;
+                    setLevelManagerSate(LevelManagerState.Ending);
+                }
+                break;
         }
     }
 
@@ -150,31 +215,13 @@ public class LevelManager : MonoBehaviourPunCallbacks
         yield return new WaitForSeconds(3);
         setLevelManagerSate(LevelManagerState.Playing);
     }
-
-    //private void OnEnable() {
-    //    PhotonNetwork.AddCallbackTarget(this);
-    //}
-
-    //private void OnDisable() {
-    //    PhotonNetwork.RemoveCallbackTarget(this);
-    //}
-
-    //public void OnEvent(EventData photonEvent)
-    //{
-    //    byte eventCode = photonEvent.Code;
-    //    if (eventCode == 1)
-    //    {
-    //        string data = (string)photonEvent.CustomData;
-    //        //getNewGameplayRole();
-    //        //Hacer algo con el string
-    //    }
-    //}
 }
 public enum LevelManagerState
 {
     None,
     Waiting,
-    Playing
+    Playing,
+    Ending
 }
 
 
