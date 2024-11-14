@@ -70,6 +70,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
             }
             if (Input.GetKeyDown(KeyCode.Escape))
             {
+                DiedEvent(m_newPlayerRole);
                 LevelManager.instance.disconnectFromCurrentRoom();
             }
         }
