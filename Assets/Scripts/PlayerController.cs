@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
     [SerializeField] Transform m_playerRenderer;
     [SerializeField] Transform m_ghost;
     [SerializeField] Transform m_orientation;
-    [SerializeField] BoxCollider m_boxcollider;
+    [SerializeField] GameObject m_damage;
     [SerializeField] ParticleSystem m_particleSystem;
     [SerializeField] MeshRenderer m_icon;
     [SerializeField] Material[] m_material;
@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
 
     float m_hor, m_vert;
     Vector3 m_direction;
-    bool m_death, m_isDeath, m_canPlay;
+    [SerializeField]bool m_death, m_isDeath, m_canPlay, m_canAttack;
     string m_newPlayerRole;
 
     #endregion
@@ -48,7 +48,8 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
 
     private void Start()
     {
-        m_boxcollider.enabled = false;
+        m_damage.SetActive(false);
+        m_canAttack = true;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         m_particleSystem.Stop();
@@ -60,13 +61,11 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
         {
             if(!m_isDeath && m_canPlay && LevelManager.instance.m_currentState != LevelManagerState.Ending)
             {
-                if (Input.GetKeyDown(KeyCode.E))
+                if (Input.GetKeyDown(KeyCode.E) && m_canAttack)
                 {
-                    m_boxcollider.enabled = true;
-                }
-                else if (Input.GetKeyUp(KeyCode.E))
-                {
-                    m_boxcollider.enabled = false;
+                    m_damage.SetActive(true);
+                    m_canAttack = false;
+                    StartCoroutine(DeactivateAttack());
                 }
             }
             if (Input.GetKeyDown(KeyCode.Escape))
@@ -223,6 +222,14 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
         m_rb.useGravity = false;
         m_capsuleCollider.isTrigger = true;
         m_death = false;
+    }
+
+    IEnumerator DeactivateAttack()
+    {
+        yield return new WaitForSeconds(0.75f);
+        m_damage.SetActive(false);
+        yield return new WaitForSeconds(3.25f);
+        m_canAttack = true;
     }
 
     #endregion
