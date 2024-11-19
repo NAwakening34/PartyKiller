@@ -235,7 +235,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
     {
         yield return new WaitForSeconds(0.75f);
         m_damage.SetActive(false);
-        yield return new WaitForSeconds(3.25f);
+        yield return new WaitForSeconds(2.25f);
         m_canAttack = true;
     }
 

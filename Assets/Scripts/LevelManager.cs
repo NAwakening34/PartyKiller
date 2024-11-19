@@ -183,23 +183,27 @@ public class LevelManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
     void InnocentDied()
     {
-        Debug.Log("entro a event");
-        m_innocentCount--;
-        if (m_innocentCount == 0)
+        if (m_currentState != LevelManagerState.Ending)
         {
-            m_photonView.RPC("winnerInfo", RpcTarget.All, false);
-            setLevelManagerSate(LevelManagerState.Ending);
+            m_innocentCount--;
+            if (m_innocentCount == 0)
+            {
+                m_photonView.RPC("winnerInfo", RpcTarget.All, false);
+                setLevelManagerSate(LevelManagerState.Ending);
+            }
         }
     }
 
     void TraitorDied()
     {
-        Debug.Log("entro a event");
-        m_traitorCount--;
-        if (m_traitorCount == 0)
+        if (m_currentState != LevelManagerState.Ending)
         {
-            m_photonView.RPC("winnerInfo", RpcTarget.All, true);
-            setLevelManagerSate(LevelManagerState.Ending);
+            m_traitorCount--;
+            if (m_traitorCount == 0)
+            {
+                m_photonView.RPC("winnerInfo", RpcTarget.All, true);
+                setLevelManagerSate(LevelManagerState.Ending);
+            }
         }
     }
 
