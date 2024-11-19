@@ -7,6 +7,7 @@ using UnityEngine;
 using ExitGames.Client.Photon;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 using System.Linq;
+using System.Xml.Serialization;
 
 public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
 {
@@ -30,7 +31,6 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
     [SerializeField] ParticleSystem m_particleSystem;
     [SerializeField] MeshRenderer m_icon;
     [SerializeField] Material[] m_material;
-    [SerializeField] TextMeshProUGUI m_textMeshProUGUI;
     [SerializeField] CapsuleCollider m_capsuleCollider;
 
     #endregion
@@ -118,7 +118,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
 
     void Movement()
     {
-        if (m_pv.IsMine && !m_death && m_canPlay && LevelManager.instance.m_currentState != LevelManagerState.Ending)
+        if (m_pv.IsMine && !m_death && m_canPlay)
         {
             m_orientation.forward = (transform.position - new Vector3(m_camera.position.x, transform.position.y, m_camera.position.z)).normalized;
             m_hor = Input.GetAxisRaw("Horizontal");
@@ -143,16 +143,21 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
             {
                 case "Innocent":
                     m_icon.material = m_material[0];
-                    m_textMeshProUGUI.text = "Innocent";
-                    m_textMeshProUGUI.color = Color.cyan;
                     break;
                 case "Traitor":
                     m_icon.material = m_material[1];
-                    m_textMeshProUGUI.text = "Traitor";
-                    m_textMeshProUGUI.color = Color.red;
                     break;
             }
             m_canPlay = true;
+        }
+    }
+
+    void Victory()
+    {
+        if(!m_isDeath)
+        {
+            m_anim.SetTrigger("Victory");
+            m_canPlay= false;
         }
     }
 
@@ -181,6 +186,7 @@ public class PlayerController : MonoBehaviourPunCallbacks, IOnEventCallback
             case 3:
                 break;
             case 4:
+                Victory();
                 break;
             case 5:
                 break;

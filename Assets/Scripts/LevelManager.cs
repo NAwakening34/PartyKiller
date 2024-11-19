@@ -66,6 +66,16 @@ public class LevelManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
         PhotonNetwork.RaiseEvent(m_ID, content, raiseEventOptions, SendOptions.SendReliable);
     }
+
+    void setVictoryEvent()
+    {
+        byte m_ID = 4;//Codigo del Evento (1...199)
+        object content = "Termino";
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
+
+        PhotonNetwork.RaiseEvent(m_ID, content, raiseEventOptions, SendOptions.SendReliable);
+    }
+
     public LevelManagerState CurrentState { get { return m_currentState; } }
     public LevelManagerState getLevelManagerSate()
     {
@@ -214,6 +224,7 @@ public class LevelManager : MonoBehaviourPunCallbacks, IOnEventCallback
             m_textMeshProUGUI.text = "Traitor Win";
             m_textMeshProUGUI.color = UnityEngine.Color.red;
         }
+        setVictoryEvent();
     }
 
     //Probablemente Se necesite RPC
